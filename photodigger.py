@@ -45,7 +45,7 @@ if args.command == "copy":
     except:
         logging.error("Failed to create dir")
         raise
-    
+
     for f in args.sourcedir.rglob('*'):
         file_ext = (f.suffix).upper()
         if file_ext in raws:
@@ -57,16 +57,17 @@ if args.command == "copy":
                 except:
                     logging.error("Create date is missing for {}".format(f))
                     raise
-    
+
             newfilename = "{}_{}{}".format(createdate, file_identifier, file_ext)
             destination_file = args.destdir / newfilename
-    
+
             logging.debug("file: {}, ext: {}, createdate: {}, file_identifier: {}".format(f, file_ext, createdate, file_identifier))
             logging.debug("destination file: {}".format(destination_file))
-    
+
             try:
-                #shutil.copy(f, destination_file)
-                logging.info("File {} copied to {}".format(f, newfilename))
+                shutil.copy(f, destination_file)
+                f.rename(f.with_suffix('.copied'))
+                logging.info("File {} copied to {}".format(f, destination_file))
             except Exception as e:
                 logging.error("Error copying {}: {}".format(f, e))
 
