@@ -19,6 +19,7 @@ def calculate_crc32(filename):
 
 raws = [ '.RAF','.CR2','.NRW','.ERF','.RW2','.NEF','.ARW','.RWZ','.EIP','.DNG','.BAY','.DCR','.RAW','.CRW','.3FR','.K25','.KC2','.MEF','.DNG','.CS1','.ORF','.ARI','.SR2','.MOS','.CR3','.GPR','.SRW','.MFW','.SRF','.FFF','.KDC','.MRW','.J6I','.RWL','.X3F','.PEF','.IIQ','.CXI','.NKSC','.MDC', '.DNG' ]
 archives = [ '.XMP', '.JPG' ]
+videos = [ '.MP4', '.MOV' ]
 
 description = (
     'Command line interface for manage better your raw and your jpg'
@@ -39,7 +40,7 @@ archive_cmd.add_argument('--date-structure', dest="datestructure", action='store
 
 fixexifdata_cmd = subparsers.add_parser('fixexifdate', help="fix the exif date")
 fixexifdata_cmd.add_argument( '--sourcedir', help='Set the dir to read', required=True, type=pathlib.Path)
-fixexifdata_cmd.add_argument( '--regexpfile', help='Set regexp file', required=True) 
+fixexifdata_cmd.add_argument( '--regexpfile', help='Set regexp file', required=True)
 fixexifdata_cmd.add_argument('--seconds', help='seconds to fix', required=True, type=int)
 fixexifdata_cmd.add_argument('--action', help='add or remove seconds', default="add")
 
@@ -91,6 +92,16 @@ if args.command == "copy":
             except Exception as e:
                 logging.error("Error copying {}: {}".format(f, e))
 
+    for v in args.sourcedir.rglob('*'):
+        file_ext = (v.suffix).upper()
+        if file_ext in videos:
+            try:
+                shutil.copy(v, args.destdir )
+                v.rename(v.with_suffix('.copied'))
+                logging.info("File {} copied to {}".format(v, args.destdir ))
+            except Exception as e:
+                logging.error("Error copying {}: {}".format(v,e))
+
 if args.command == "archive":
     files = args.sourcedir.rglob('*')
     for f in files:
@@ -132,7 +143,7 @@ if args.command == "fixexifdate":
                 try:
                     logging.info("create backup file")
                     backupdir = "backup"
-                    new_backupdir = args.sourcedir / backupdir 
+                    new_backupdir = args.sourcedir / backupdir
                     new_backupdir.mkdir(parents=True, exist_ok=True)
 
                     shutil.copy(f, new_backupdir)
